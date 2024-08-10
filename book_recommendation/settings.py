@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-fpemypy#sqn%$gfwo)$6m*rz+4o@$00esh$_1ym$t1$+g9a0r#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
