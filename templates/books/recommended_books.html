@@ -1,0 +1,101 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<style>
+    .alert-container {
+    margin-bottom: 20px;
+}
+
+.alert {
+    margin-top: 10px;
+}
+
+.cover-image {
+    width: 80px;
+    height: auto;
+}
+
+.list-group-item {
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.comment {
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+</style>
+<h2>Recommended Books</h2>
+
+<!-- Display messages -->
+{% if messages %}
+    <div class="alert-container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<ul class="list-group">
+    {% for recommendation in recommendations %}
+        <li class="list-group-item">
+            <div class="d-flex align-items-start">
+                <div class="mr-3">
+                    <!-- Display cover image with default if not available -->
+                    <img src="{{ recommendation.cover_image|default:'https://via.placeholder.com/80x120' }}" alt="{{ recommendation.book_title }}" class="cover-image">
+                </div>
+                <div>
+                    <h5>{{ recommendation.book_title }}</h5>
+                    <p><strong>Author:</strong> {{ recommendation.author|default:"Unknown" }}</p>
+                    <p><strong>Category:</strong> {{ recommendation.category|default:"N/A" }}</p>
+                    <p><strong>Publication Date:</strong> {{ recommendation.publication_date|default:"Not available" }}</p>
+                    <p>{{ recommendation.book_description|default:"No description available." }}</p>
+                    
+                    <!-- Display likes count -->
+                    <p><strong>Likes:</strong> {{ recommendation.likes.count }}</p>
+
+                    <!-- Like Button -->
+                    <form method="POST" action="{% url 'like_recommendation' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="recommendation_id" value="{{ recommendation.id }}">
+                        <button type="submit" class="btn btn-primary">Like</button>
+                    </form>
+
+                    <!-- Comments -->
+                    <h6>Comments:</h6>
+                    {% for comment in recommendation.comment_set.all %}
+                        <div class="comment">
+                            <strong>{{ comment.user.username }}:</strong>
+                            <p>{{ comment.text }}</p>
+                            <small>Posted on {{ comment.created_at }}</small>
+                        </div>
+                    {% empty %}
+                        <p>No comments yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No recommendations available.</li>
+    {% endfor %}
+</ul>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500); // Time for fade-out effect
+            });
+        }, 3000); // Time to wait before starting to fade out (e.g., 3000 ms = 3 seconds)
+    });
+</script>
+{% endblock %}

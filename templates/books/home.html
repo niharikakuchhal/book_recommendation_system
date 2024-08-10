@@ -1,0 +1,65 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<h2>Welcome to the Book Recommendation System</h2>
+
+<!-- Search Form -->
+<form method="GET" action="{% url 'search_book' %}">
+    <div class="form-group">
+        <label for="query">Search for a book:</label>
+        <input type="text" name="q" id="query" class="form-control" placeholder="Enter book title, author, or keyword" required>
+    </div>
+    <div class="form-group">
+        <label for="search_type">Search By:</label>
+        <select name="type" id="search_type" class="form-control">
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="category">Category</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<!-- Display Search Results -->
+{% if search_results %}
+    <h3>Search Results:</h3>
+    <div class="row">
+        {% for book in search_results %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="{{ book.cover_image|default:'https://via.placeholder.com/150' }}" class="card-img-top" alt="{{ book.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book.title }}</h5>
+                        <p class="card-text"><strong>Author:</strong> {{ book.authors|join:", " }}</p>
+                        <p class="card-text"><strong>Description:</strong> {{ book.description|default:"No description available" }}</p>
+                        <p class="card-text"><strong>Category:</strong> {{ book.category|default:"No category available"|join:", " }}</p>
+                        <p class="card-text"><strong>Publication Date:</strong> {{ book.publication_date|default:"No publication date available"|join:", " }}</p>
+                        <a href="{{ book.link }}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination Controls -->
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+        {% if page > 1 %}
+          <li class="page-item">
+            <a class="page-link" href="?q={{ request.GET.q }}&type={{ request.GET.type }}&page={{ page|add:"-1" }}&limit={{ limit }}" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page }}</span></li>
+        <li class="page-item">
+          <a class="page-link" href="?q={{ request.GET.q }}&type={{ request.GET.type }}&page={{ page|add:"1" }}&limit={{ limit }}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+{% endif %}
+
+{% endblock %}

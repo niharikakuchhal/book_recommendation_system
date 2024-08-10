@@ -1,0 +1,63 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<h2>Search Results</h2>
+<ul class="list-group">
+    {% for book in books %}
+        <li class="list-group-item">
+            <div class="d-flex align-items-center">
+                {% if book.volumeInfo.imageLinks and book.volumeInfo.imageLinks.thumbnail %}
+                    <img src="{{ book.volumeInfo.imageLinks.thumbnail }}" alt="{{ book.volumeInfo.title }}" style="width: 80px; height: auto;" class="mr-3">
+                {% else %}
+                    <img src="https://2.bp.blogspot.com/-yxhMnSHInkg/WXiqa4KKiTI/AAAAAAAArkw/DuiicSsOYn8_YUK0jyvwSyEmorf12BcSgCLcBGAs/s1600/professional-book-style-CD-cover-design---customise-and-buy-online-now---get-it-with-free-background-art-and-customized-text-for-your-CD-booklet-and-other-promotions-separately.jpg" alt="Default Cover" style="width: 80px; height: auto;" class="mr-3">
+                {% endif %}
+                <div>
+                    <h5>{{ book.volumeInfo.title }}</h5>
+                    <p><strong>Author:</strong> {{ book.volumeInfo.authors|join:", " }}</p>
+                    <p><strong>Category:</strong> {{ book.volumeInfo.categories|join:", " }}</p>
+                    <p><strong>Publication Date:</strong> {{ book.volumeInfo.publishedDate }}</p>
+                    <p>{{ book.volumeInfo.description|default:"No description available." }}</p>
+                    <a href="{{ book.volumeInfo.infoLink }}" target="_blank">Read More</a>
+                    <form method="POST" action="{% url 'add_to_recommendations' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="book_title" value="{{ book.volumeInfo.title }}">
+                        <input type="hidden" name="book_description" value="{{ book.volumeInfo.description|default:"No description available." }}">
+                        <input type="hidden" name="author" value="{{ book.volumeInfo.authors|join:", " }}">
+                        <input type="hidden" name="link" value="{{ book.volumeInfo.infoLink }}">
+                        <input type="hidden" name="cover_image" value="{{ book.volumeInfo.imageLinks.thumbnail|default:"https://2.bp.blogspot.com/-yxhMnSHInkg/WXiqa4KKiTI/AAAAAAAArkw/DuiicSsOYn8_YUK0jyvwSyEmorf12BcSgCLcBGAs/s1600/professional-book-style-CD-cover-design---customise-and-buy-online-now---get-it-with-free-background-art-and-customized-text-for-your-CD-booklet-and-other-promotions-separately.jpg" }}">
+                        <input type="hidden" name="rating" value="{{ book.volumeInfo.averageRating|default:"N/A" }}">
+                        <input type="hidden" name="category" value="{{ book.volumeInfo.categories|join:", " }}">
+                        <input type="hidden" name="publication_date" value="{{ book.volumeInfo.publishedDate }}">
+                        <input type="hidden" name="likes" value="0">  <!-- Default likes to 0 -->
+                        <button type="submit" class="btn btn-success mt-2">Recommend this Book</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No books found matching your query.</li>
+    {% endfor %}
+</ul>
+
+<!-- Pagination Controls -->
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&page={{ page|add:"-1" }}&limit={{ limit }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Page {{ page }}</span></li>
+    {% if page < total_pages %}
+      <li class="page-item">
+        <a class="page-link" href="?q={{ query }}&type={{ search_type }}&page={{ page|add:"1" }}&limit={{ limit }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<h2>My Recommendations</h2>
+<style>
+    .alert {
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.alert-info {
+    background-color: #d9edf7;
+    color: #31708f;
+    border: 1px solid #bce8f1;
+}
+
+.alert-warning {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    border: 1px solid #faebcc;
+}
+</style>
+<ul class="list-group">
+    {% for recommendation in recommendations %}
+        <li class="list-group-item">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h5>{{ recommendation.book_title }}</h5>
+                    <p><strong>Author:</strong> {{ recommendation.author }}</p>
+                    <p><strong>Category:</strong> {{ recommendation.category }}</p>
+                    <p><strong>Publication Date:</strong> {{ recommendation.publication_date }}</p>
+                    <p>{{ recommendation.book_description|default:"No description available." }}</p>
+                    <img src="{{ recommendation.cover_image }}" alt="{{ recommendation.book_title }}" style="width: 80px; height: auto;" class="mr-3">
+                    <p><strong>Likes:</strong> {{ recommendation.likes.count }}</p>
+
+                    <!-- Like Button -->
+                    <form method="POST" action="{% url 'like_recommendation' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="recommendation_id" value="{{ recommendation.id }}">
+                        <button type="submit" class="btn btn-primary">Like</button>
+                    </form>
+
+                    <!-- Comments -->
+                    <h6>Comments:</h6>
+                    {% for comment in recommendation.comment_set.all %}
+                        <div>
+                            <strong>{{ comment.user.username }}:</strong>
+                            <p>{{ comment.text }}</p>
+                            <small>Posted on {{ comment.created_at }}</small>
+                        </div>
+                    {% empty %}
+                        <p>No comments yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No recommendations available.</li>
+    {% endfor %}
+</ul>
+<!-- Message Display Area -->
+<div id="message" class="alert" style="display: none;"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const messageElement = document.getElementById('message');
+
+        document.querySelectorAll('.like-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: new URLSearchParams(new FormData(form)).toString()
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        // Display message
+                        messageElement.textContent = data.message;
+                        messageElement.className = 'alert alert-info'; // Adjust as needed
+                        messageElement.style.display = 'block';
+                        
+                        if (data.message === 'You liked this recommendation') {
+                            // Update the likes count on the page
+                            let likesCountElement = document.getElementById('likes-' + form.dataset.recommendationId);
+                            if (likesCountElement) {
+                                likesCountElement.textContent = parseInt(likesCountElement.textContent) + 1;
+                            }
+                        } else if (data.message === 'You have already liked this recommendation') {
+                            messageElement.className = 'alert alert-warning'; // Adjust as needed
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}

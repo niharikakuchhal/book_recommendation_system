@@ -1,0 +1,8 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+    <div class="alert alert-success" role="alert">
+        {{ message }}
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-primary">Go Back to Home</a>
+{% endblock %}

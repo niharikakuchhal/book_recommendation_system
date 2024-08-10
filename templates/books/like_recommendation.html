@@ -1,0 +1,7 @@
+{% extends 'books/base.html' %}
+
+{% block content %}
+<h2>Like a Recommendation</h2>
+<p>Thank you for liking this recommendation!</p>
+<a href="{% url 'recommended_books' %}" class="btn btn-primary">Back to All Recommendations</a>
+{% endblock %}
